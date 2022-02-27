@@ -42,22 +42,16 @@ class GroupModel(QtCore.QAbstractTableModel):
         return len(self._data[0])
 
 
-def test(data):
+def test():
     """test function"""
     class MainWindow(QtWidgets.QMainWindow):
-        def __init__(self, data):
+        def __init__(self, model):
             super().__init__()
-            self.table = QtWidgets.QTableView()
-            self.model = GroupModel(data)
-            self.table.setModel(self.model)
-            self.setCentralWidget(self.table)
+            table = QtWidgets.QTableView()
+            table.setModel(model)
+            self.setCentralWidget(table)
 
-    app=QtWidgets.QApplication(sys.argv)
-    window=MainWindow(data)
-    window.show()
-    app.exec()
-
-if __name__ == "__main__":
+    # data underneath the model
     data = [
       [4, 9, 2],
       [1, 0, 0],
@@ -66,4 +60,19 @@ if __name__ == "__main__":
       [7, 8, 9],
     ]
 
-    test(data)
+    # table model
+    model  = GroupModel(data)
+    app    = QtWidgets.QApplication(sys.argv)
+    window = MainWindow(model)
+    window.show()
+
+    # notify model that data is about to change
+    model.layoutAboutToBeChanged.emit()
+    data.append([10,10,10])  # show that data can change
+    model.layoutChanged.emit()
+
+    # main loop
+    app.exec()
+
+if __name__ == "__main__":
+    test()
