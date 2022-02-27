@@ -42,31 +42,28 @@ class GroupModel(QtCore.QAbstractTableModel):
         return len(self._data[0])
 
 
-def main():
-    """main program for testing purposes"""
+def test(data):
+    """test function"""
     class MainWindow(QtWidgets.QMainWindow):
-        def __init__(self):
+        def __init__(self, data):
             super().__init__()
-
             self.table = QtWidgets.QTableView()
-
-            data = [
-              [4, 9, 2],
-              [1, 0, 0],
-              [3, 5, 0],
-              [3, 3, 2],
-              [7, 8, 9],
-            ]
-
             self.model = GroupModel(data)
             self.table.setModel(self.model)
-
             self.setCentralWidget(self.table)
 
     app=QtWidgets.QApplication(sys.argv)
-    window=MainWindow()
+    window=MainWindow(data)
     window.show()
     app.exec()
 
 if __name__ == "__main__":
-    main()
+    data = [
+      [4, 9, 2],
+      [1, 0, 0],
+      [3, 5, 0],
+      [3, 3, 2],
+      [7, 8, 9],
+    ]
+
+    test(data)
