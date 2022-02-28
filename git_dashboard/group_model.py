@@ -24,32 +24,33 @@ from PySide6.QtCore import Qt
 class GroupModel(QtCore.QAbstractTableModel):
     """
     Model representing a group of repositories using a 2D list:
-    [["name1", "status1", "path1"],
-     ["name2", "status2", "path2"],
-     ...
+    group = [
+        ["name1", "status1", "path1"],
+        ["name2", "status2", "path2"],
+        ...
     ]
     """
-    def __init__(self, data):
+    def __init__(self, group):
         """constructor"""
         super().__init__()
         self.header = ["Name", "Status", "Path"]
-        self._data = data
+        self.group = group
 
     def data(self, index, role):
         """access model data"""
         if role == Qt.DisplayRole:
             # .row() indexes into the outer list,
             # .column() indexes into the sub-list
-            return self._data[index.row()][index.column()]
+            return self.group[index.row()][index.column()]
         return None
 
     def rowCount(self, _):
         """number of rows"""
-        return len(self._data)
+        return len(self.group)
 
     def columnCount(self, _):
         """number of columns"""
-        return len(self._data[0])
+        return len(self.group[0])
 
     def headerData(self, col, orientation, role):
         """table header"""
@@ -68,21 +69,21 @@ def main():
             table.setModel(model)
             self.setCentralWidget(table)
 
-    # data underneath the model
-    data = [
+    # data for group
+    group = [
       ["foo", "up-to-date", "..."],
       ["bar", "-1, +100", "..."],
     ]
 
     # table model
-    model  = GroupModel(data)
+    model  = GroupModel(group)
     app    = QtWidgets.QApplication(sys.argv)
     window = MainWindow(model)
     window.show()
 
     # notify model that data is about to change
     model.layoutAboutToBeChanged.emit()        # pylint: disable=no-member
-    data.append(["baz", "up-to-date", "..."])  # show that data can change
+    group.append(["baz", "up-to-date", "..."]) # show that data can change
     model.layoutChanged.emit()                 # pylint: disable=no-member
 
     # main loop
