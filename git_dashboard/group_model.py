@@ -18,7 +18,7 @@ Group View
 """
 
 import sys
-from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtWidgets
 from PySide6.QtCore import Qt
 
 class GroupModel(QtCore.QAbstractTableModel):
@@ -31,7 +31,8 @@ class GroupModel(QtCore.QAbstractTableModel):
     """
     def __init__(self, data):
         """constructor"""
-        super(GroupModel, self).__init__()
+        super().__init__()
+        self.header = ["Name", "Status", "Path"]
         self._data = data
 
     def data(self, index, role):
@@ -40,26 +41,28 @@ class GroupModel(QtCore.QAbstractTableModel):
             # .row() indexes into the outer list,
             # .column() indexes into the sub-list
             return self._data[index.row()][index.column()]
+        return None
 
-    def rowCount(self, index):
+    def rowCount(self, _):
         """number of rows"""
         return len(self._data)
 
-    def columnCount(self, index):
+    def columnCount(self, _):
         """number of columns"""
         return len(self._data[0])
 
     def headerData(self, col, orientation, role):
         """table header"""
-        header = ["Name", "Status", "Path"]
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            return header[col]
+            return self.header[col]
         return None
 
 def main():
     """test function"""
     class MainWindow(QtWidgets.QMainWindow):
+        """main window"""
         def __init__(self, model):
+            """constructor"""
             super().__init__()
             table = QtWidgets.QTableView()
             table.setModel(model)
@@ -78,9 +81,9 @@ def main():
     window.show()
 
     # notify model that data is about to change
-    model.layoutAboutToBeChanged.emit()
+    model.layoutAboutToBeChanged.emit()        # pylint: disable=no-member
     data.append(["baz", "up-to-date", "..."])  # show that data can change
-    model.layoutChanged.emit()
+    model.layoutChanged.emit()                 # pylint: disable=no-member
 
     # main loop
     app.exec()

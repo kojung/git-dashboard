@@ -1,5 +1,4 @@
 [MASTER]
-
 # Specify a configuration file.
 #rcfile=
 
@@ -32,7 +31,7 @@ unsafe-load-any-extension=no
 # A comma-separated list of package or module names from where C extensions may
 # be loaded. Extensions are loading into the active Python interpreter and may
 # run arbitrary code
-extension-pkg-whitelist=
+extension-pkg-whitelist=PySide6
 
 # Allow optimization of some AST trees. This will activate a peephole AST
 # optimizer, which will apply various small optimizations. For instance, it can
@@ -275,10 +274,10 @@ module-rgx=(([a-z_][a-z0-9_]*)|([A-Z][a-zA-Z0-9]+))$
 module-name-hint=(([a-z_][a-z0-9_]*)|([A-Z][a-zA-Z0-9]+))$
 
 # Regular expression matching correct method names
-method-rgx=[a-z_][a-z0-9_]{1,30}$
+method-rgx=[a-z_][A-Za-z0-9_]{1,30}$
 
 # Naming hint for method names
-method-name-hint=[a-z_][a-z0-9_]{1,30}$
+method-name-hint=[a-z_][A-Za-z0-9_]{1,30}$
 
 # Regular expression which should only match function or class names that do
 # not require a docstring.
