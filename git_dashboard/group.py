@@ -40,8 +40,6 @@ class GroupModel(QtCore.QAbstractTableModel):
     def data(self, index, role):
         """access model data"""
         if role == Qt.DisplayRole:
-            # .row() indexes into the outer list,
-            # .column() indexes into the sub-list
             return self.group[index.row()][index.column()]
         return None
 
@@ -77,8 +75,8 @@ def main():
 
     # data for group
     group = [
-      ["foo", "up-to-date", "..."],
-      ["bar", "-1, +100", "..."],
+        ["foo", "up-to-date", "..."],
+        ["bar", "-1, +100", "..."],
     ]
 
     # table model
@@ -88,7 +86,7 @@ def main():
     window = MainWindow(view)
     window.show()
 
-    # notify model that data is about to change
+    # show that model can change after show()
     model.layoutAboutToBeChanged.emit()        # pylint: disable=no-member
     group.append(["baz", "up-to-date", "..."]) # show that data can change
     model.layoutChanged.emit()                 # pylint: disable=no-member

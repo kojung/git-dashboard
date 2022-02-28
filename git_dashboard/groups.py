@@ -14,7 +14,13 @@
 # this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Groups is a collection of Group (see group.py)
+Groups is a collection of Group (see group.py). Underlying model is a dictionary
+of groups. E.g.
+    groups = {
+        "group1": [["repo1", "status1", "path1"]],
+        "group2": [["repo2", "status2", "path2"],
+                   ["repo2", "status2", "path2"]]
+    }
 """
 
 import sys
@@ -31,15 +37,7 @@ from git_dashboard.group import (
 )
 
 class GroupsView(QTabWidget):
-    """
-    Groups view
-    data consists of a dictionary of group name and group data. E.g.:
-    {
-        "group1": [["repo1", "status1", "path1"]],
-        "group2": [["repo2", "status2", "path2"],
-                   ["repo2", "status2", "path2"]]
-    }
-    """
+    """View class for groups"""
     def __init__(self, groups):
         """constructor"""
         super().__init__()
@@ -73,7 +71,7 @@ def main():
             ["baz", "up-to-date", "..."],
         ],
     }
-    view = GroupsView(model)
+    view   = GroupsView(model)
     window = MainWindow(view)
     window.show()
     app.exec()
