@@ -22,6 +22,13 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Qt
 
 class GroupModel(QtCore.QAbstractTableModel):
+    """
+    Model representing a group of repositories using a 2D list:
+    [["name1", "status1", "path1"],
+     ["name2", "status2", "path2"],
+     ...
+    ]
+    """
     def __init__(self, data):
         """constructor"""
         super(GroupModel, self).__init__()
@@ -49,7 +56,7 @@ class GroupModel(QtCore.QAbstractTableModel):
             return header[col]
         return None
 
-def test():
+def main():
     """test function"""
     class MainWindow(QtWidgets.QMainWindow):
         def __init__(self, model):
@@ -79,4 +86,4 @@ def test():
     app.exec()
 
 if __name__ == "__main__":
-    test()
+    main()
