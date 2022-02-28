@@ -14,7 +14,15 @@
 # this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Group View
+Group Model and View classes
+
+A group is a collection of related repos. Underlying model is a 2D array:
+
+group = [
+    ["name1", "status1", "path1"],
+    ["name2", "status2", "path2"],
+    ...
+]
 """
 
 import sys
@@ -22,16 +30,9 @@ from PySide6 import QtCore, QtWidgets
 from PySide6.QtCore import Qt
 
 class GroupModel(QtCore.QAbstractTableModel):
-    """
-    Model representing a group of repositories using a 2D list:
-    group = [
-        ["name1", "status1", "path1"],
-        ["name2", "status2", "path2"],
-        ...
-    ]
-    """
+    """Model Group"""
     def __init__(self, group):
-        """constructor"""
+        """Constructor"""
         super().__init__()
         self.header = ["Name", "Status", "Path"]
         self.group = group
@@ -58,6 +59,13 @@ class GroupModel(QtCore.QAbstractTableModel):
             return self.header[col]
         return None
 
+class GroupView(QtWidgets.QTableView):
+    """View for group"""
+    def __init__(self, model):
+        """constructor"""
+        super().__init__()
+        self.setModel(model)
+
 def main():
     """test function"""
     class MainWindow(QtWidgets.QMainWindow):
@@ -65,8 +73,7 @@ def main():
         def __init__(self, model):
             """constructor"""
             super().__init__()
-            table = QtWidgets.QTableView()
-            table.setModel(model)
+            table = GroupView(model)
             self.setCentralWidget(table)
 
     # data for group

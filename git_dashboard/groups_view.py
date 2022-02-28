@@ -19,6 +19,8 @@ Tab view
 
 import sys
 
+print(sys.path)
+
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
