@@ -23,24 +23,31 @@ from PySide6.QtCore import Qt
 
 class GroupModel(QtCore.QAbstractTableModel):
     def __init__(self, data):
+        """constructor"""
         super(GroupModel, self).__init__()
         self._data = data
 
     def data(self, index, role):
+        """access model data"""
         if role == Qt.DisplayRole:
             # .row() indexes into the outer list,
             # .column() indexes into the sub-list
             return self._data[index.row()][index.column()]
 
     def rowCount(self, index):
-        # The length of the outer list.
+        """number of rows"""
         return len(self._data)
 
     def columnCount(self, index):
-        # The following takes the first sub-list, and returns
-        # the length (only works if all rows are an equal length)
+        """number of columns"""
         return len(self._data[0])
 
+    def headerData(self, col, orientation, role):
+        """table header"""
+        header = ["Name", "Status", "Path"]
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            return header[col]
+        return None
 
 def test():
     """test function"""
@@ -53,11 +60,8 @@ def test():
 
     # data underneath the model
     data = [
-      [4, 9, 2],
-      [1, 0, 0],
-      [3, 5, 0],
-      [3, 3, 2],
-      [7, 8, 9],
+      ["foo", "up-to-date", "..."],
+      ["bar", "-1, +100", "..."],
     ]
 
     # table model
@@ -68,7 +72,7 @@ def test():
 
     # notify model that data is about to change
     model.layoutAboutToBeChanged.emit()
-    data.append([10,10,10])  # show that data can change
+    data.append(["baz", "up-to-date", "..."])  # show that data can change
     model.layoutChanged.emit()
 
     # main loop
