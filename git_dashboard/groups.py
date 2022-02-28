@@ -14,12 +14,10 @@
 # this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Tab view
+Groups is a collection of Group (see group.py)
 """
 
 import sys
-
-print(sys.path)
 
 from PySide6.QtWidgets import (
     QApplication,
@@ -27,7 +25,10 @@ from PySide6.QtWidgets import (
     QTabWidget,
 )
 
-from git_dashboard.group_model import GroupModel
+from git_dashboard.group import (
+    GroupView,
+    GroupModel
+)
 
 class GroupsView(QTabWidget):
     """
@@ -41,25 +42,25 @@ class GroupsView(QTabWidget):
     """
     def __init__(self, groups):
         """constructor"""
-        super().__init__(self, groups)
+        super().__init__()
         self.groups = groups
+
+        self.setTabPosition(QTabWidget.West)
+        self.setMovable(True)
+
+        for name, group in groups.items():
+            model = GroupModel(group)
+            view  = GroupView(model)
+            self.addTab(view, name)
 
 def main():
     """main routine for test purposes"""
     class MainWindow(QMainWindow):
         """main window"""
-        def __init__(self, model):
+        def __init__(self, view):
             """constructor"""
             super().__init__()
-
-            tabs = QTabWidget()
-            tabs.setTabPosition(QTabWidget.West)
-            tabs.setMovable(True)
-
-            for name, group in model.items():
-                tabs.addTab(GroupModel(group), name)
-
-            self.setCentralWidget(tabs)
+            self.setCentralWidget(view)
 
     app = QApplication(sys.argv)
 
@@ -72,7 +73,8 @@ def main():
             ["baz", "up-to-date", "..."],
         ],
     }
-    window = MainWindow(model)
+    view = GroupsView(model)
+    window = MainWindow(view)
     window.show()
     app.exec()
 

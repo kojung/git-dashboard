@@ -70,11 +70,10 @@ def main():
     """test function"""
     class MainWindow(QtWidgets.QMainWindow):
         """main window"""
-        def __init__(self, model):
+        def __init__(self, view):
             """constructor"""
             super().__init__()
-            table = GroupView(model)
-            self.setCentralWidget(table)
+            self.setCentralWidget(view)
 
     # data for group
     group = [
@@ -83,9 +82,10 @@ def main():
     ]
 
     # table model
-    model  = GroupModel(group)
     app    = QtWidgets.QApplication(sys.argv)
-    window = MainWindow(model)
+    model  = GroupModel(group)
+    view   = GroupView(model)
+    window = MainWindow(view)
     window.show()
 
     # notify model that data is about to change
