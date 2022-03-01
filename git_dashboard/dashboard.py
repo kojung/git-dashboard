@@ -16,3 +16,46 @@
 """
 Git Dashboard
 """
+
+import os
+import sys
+from pathlib import Path
+
+import yaml
+from PySide6.QtWidgets import (
+    QApplication,
+    QMainWindow,
+)
+
+from git_dashboard.groups import GroupsView
+from git_dashboard.config import (
+    CONFIG,
+    create_default_configuration,
+)
+
+class MainWindow(QMainWindow):
+    """main window"""
+    def __init__(self, view):
+        """constructor"""
+        super().__init__()
+        self.setCentralWidget(view)
+
+def main():
+    """main routine for test purposes"""
+    # create default configuration if needed
+    if not os.path.exists(CONFIG):
+        home = Path.home()
+        create_default_configuration(home)
+
+    with open(CONFIG, "r", encoding="utf-8") as cfg:
+        groups = yaml.safe_load(cfg)
+
+    app = QApplication(sys.argv)
+
+    view   = GroupsView(groups)
+    window = MainWindow(view)
+    window.show()
+    app.exec()
+
+if __name__ == "__main__":
+    main()

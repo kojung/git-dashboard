@@ -21,9 +21,10 @@ Configuration is stored as a YAML file with the following format:
 """
 
 import os
+from pathlib import Path
+
 from appdirs import user_config_dir
 import yaml
-from pathlib import Path
 
 import git_dashboard
 
@@ -34,7 +35,7 @@ def create_default_configuration(root):
     """scan for git repos starting from root"""
     print(f"Scanning git repos from '{root}': ", end='')
     repos = {'home': []}
-    for dirpath, dirnames, filenames in os.walk(root):
+    for dirpath, dirnames, _ in os.walk(root):
         if ".git" in dirnames:
             repos['home'].append(dirpath)
     print(f"found {len(repos['home'])} git repos")
