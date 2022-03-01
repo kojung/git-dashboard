@@ -21,7 +21,6 @@ import os
 import sys
 from pathlib import Path
 
-import yaml
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -31,6 +30,7 @@ from git_dashboard.groups import GroupsView
 from git_dashboard.config import (
     CONFIG,
     create_default_configuration,
+    load_configuration,
 )
 
 class MainWindow(QMainWindow):
@@ -47,11 +47,9 @@ def main():
         home = Path.home()
         create_default_configuration(home)
 
-    with open(CONFIG, "r", encoding="utf-8") as cfg:
-        groups = yaml.safe_load(cfg)
-
     app = QApplication(sys.argv)
 
+    groups = load_configuration()
     view   = GroupsView(groups)
     window = MainWindow(view)
     window.show()

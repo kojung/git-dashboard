@@ -22,6 +22,7 @@ Configuration is stored as a YAML file with the following format:
 
 import os
 from pathlib import Path
+import copy
 
 from appdirs import user_config_dir
 import yaml
@@ -31,15 +32,18 @@ import git_dashboard
 CONFIG_DIR = user_config_dir(git_dashboard.__name__, git_dashboard.__author__)
 CONFIG = os.path.join(CONFIG_DIR, "config.yaml")
 
-def find_git_repos_from_path(dirname):
-    """find all git repos given the path"""
+def find_git_repos_from_path(dirname, depth=0, maxdepth=-1):
+    """
+    recursively find all git repos given the path. stop recusion when `depth == maxdepth`
+    """
     results = []
     dirpath, dirnames, _ = next(os.walk(dirname))
     if ".git" in dirnames:
         return [dirpath]
-    for name in dirnames:
-        absname = os.path.join(dirname, name)
-        results += find_git_repos_from_path(absname)
+    if depth != maxdepth:
+        for name in dirnames:
+            absname = os.path.join(dirname, name)
+            results += find_git_repos_from_path(absname, depth+1, maxdepth)
     return results
 
 def create_default_configuration(root):
@@ -50,6 +54,24 @@ def create_default_configuration(root):
     os.makedirs(CONFIG_DIR, exist_ok=True)
     with open(CONFIG, "w", encoding="utf-8") as cfg:
         yaml.dump(repos, cfg)
+
+def load_configuration():
+    """load configuration"""
+    with open(CONFIG, "r", encoding="utf-8") as cfg:
+        groups = yaml.safe_load(cfg)
+    for group in groups.values():
+        expanded_dirs = []
+        group_copy    = copy.copy(group)
+        # loop through each group and expand directories if needed
+        # use a copy of the group because we are modifing the list as we iterate through the list
+        for dirname in group_copy:
+            _, dirnames, _ = next(os.walk(dirname))
+            if ".git" not in dirnames:
+                expanded_dirs += find_git_repos_from_path(dirname, 0, 1) 
+                group.remove(dirname)
+        group += expanded_dirs
+
+    return groups
 
 def main():
     """for test purposes"""
