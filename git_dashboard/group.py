@@ -45,16 +45,16 @@ def analyze(path):
     try:
         repo = Repo(path)
         active_branch = repo.active_branch
-        return [name, active_branch.name, "status"]  # WIP
+        return [name, active_branch.name, "status", path]  # WIP
     except (InvalidGitRepositoryError, NoSuchPathError):
-        return [name, "n/a", "invalid"]
+        return [name, "n/a", "not a git repo", path]
 
 class GroupModel(QtCore.QAbstractTableModel):
     """Model Group"""
     def __init__(self, group):
         """Constructor"""
         super().__init__()
-        self.header = ["name", "branch", "status"]
+        self.header = ["name", "branch", "status", "path"]
         self.group = group
 
     def data(self, index, role):

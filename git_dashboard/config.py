@@ -31,13 +31,21 @@ import git_dashboard
 CONFIG_DIR = user_config_dir(git_dashboard.__name__, git_dashboard.__author__)
 CONFIG = os.path.join(CONFIG_DIR, "config.yaml")
 
+def find_git_repos_from_path(dirname):
+    """find all git repos given the path"""
+    results = []
+    dirpath, dirnames, _ = next(os.walk(dirname))
+    if ".git" in dirnames:
+        return [dirpath]
+    for name in dirnames:
+        absname = os.path.join(dirname, name)
+        results += find_git_repos_from_path(absname)
+    return results
+
 def create_default_configuration(root):
     """scan for git repos starting from root"""
     print(f"Scanning git repos from '{root}': ", end='')
-    repos = {'home': []}
-    for dirpath, dirnames, _ in os.walk(root):
-        if ".git" in dirnames:
-            repos['home'].append(dirpath)
+    repos = {'home': find_git_repos_from_path(root)}
     print(f"found {len(repos['home'])} git repos")
     os.makedirs(CONFIG_DIR, exist_ok=True)
     with open(CONFIG, "w", encoding="utf-8") as cfg:
