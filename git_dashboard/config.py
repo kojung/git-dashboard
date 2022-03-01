@@ -23,6 +23,7 @@ Configuration is stored as a YAML file with the following format:
 import os
 from appdirs import user_config_dir
 import yaml
+from pathlib import Path
 
 import git_dashboard
 
@@ -31,16 +32,21 @@ CONFIG = os.path.join(CONFIG_DIR, "config.yaml")
 
 def create_default_configuration(root):
     """scan for git repos starting from root"""
-    repos = []
+    print(f"Scanning git repos from '{root}': ", end='')
+    repos = {'home': []}
     for dirpath, dirnames, filenames in os.walk(root):
         if ".git" in dirnames:
-            repos.append(dirpath)
+            repos['home'].append(dirpath)
+    print(f"found {len(repos['home'])} git repos")
+    os.makedirs(CONFIG_DIR, exist_ok=True)
     with open(CONFIG, "w", encoding="utf-8") as cfg:
         yaml.dump(repos, cfg)
 
 def main():
     """for test purposes"""
-    create_default_configuration(os.environ.get("HOME"))
+    home = Path.home()
+    create_default_configuration(home)
+    print(f"Created default configuration at '{CONFIG}'")
 
 if __name__ == "__main__":
     main()

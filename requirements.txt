@@ -2,3 +2,4 @@ pyside6
 pylint
 appdirs
 pyyaml
+pathlib
