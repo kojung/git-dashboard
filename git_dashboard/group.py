@@ -16,31 +16,45 @@
 """
 Group Model and View classes
 
-A group is a collection of related repos. Underlying model is a 2D array:
+A group is a collection of related repos. Underlying model is just a list of
+repo paths:
 
 group = [
-    ["name1", "status1", "path1"],
-    ["name2", "status2", "path2"],
+    ["path1"],
+    ["path2"],
     ...
 ]
+
+The group model is in charge of expanding the path into name, branch, status, and
+other useful information to the view component.
 """
 
 import sys
+import os
+
 from PySide6 import QtCore, QtWidgets
 from PySide6.QtCore import Qt
+
+def analyze(path):
+    """
+    given a path to a git repository, return:
+    [name, branch, status]
+    """
+    return ["name", "branch", "status"]  # WIP
 
 class GroupModel(QtCore.QAbstractTableModel):
     """Model Group"""
     def __init__(self, group):
         """Constructor"""
         super().__init__()
-        self.header = ["Name", "Status", "Path"]
+        self.header = ["name", "branch", "status"]
         self.group = group
 
     def data(self, index, role):
         """access model data"""
         if role == Qt.DisplayRole:
-            return self.group[index.row()][index.column()]
+            columns = analyze(self.group[index.row()])
+            return columns[index.column()]
         return None
 
     def rowCount(self, _):
@@ -49,7 +63,7 @@ class GroupModel(QtCore.QAbstractTableModel):
 
     def columnCount(self, _):
         """number of columns"""
-        return len(self.group[0])
+        return len(self.header)
 
     def headerData(self, col, orientation, role):
         """table header"""
@@ -74,10 +88,9 @@ def main():
             self.setCentralWidget(view)
 
     # data for group
-    group = [
-        ["foo", "up-to-date", "..."],
-        ["bar", "-1, +100", "..."],
-    ]
+    this_script = os.path.realpath(__file__)
+    repo_path   = os.path.join(this_script, "..")
+    group = [repo_path, repo_path, repo_path]
 
     # table model
     app    = QtWidgets.QApplication(sys.argv)
@@ -87,9 +100,9 @@ def main():
     window.show()
 
     # show that model can change after show()
-    model.layoutAboutToBeChanged.emit()        # pylint: disable=no-member
-    group.append(["baz", "up-to-date", "..."]) # show that data can change
-    model.layoutChanged.emit()                 # pylint: disable=no-member
+    model.layoutAboutToBeChanged.emit() # pylint: disable=no-member
+    group.append(repo_path)             # show that data can change
+    model.layoutChanged.emit()          # pylint: disable=no-member
 
     # main loop
     app.exec()

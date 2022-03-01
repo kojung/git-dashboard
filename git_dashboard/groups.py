@@ -17,13 +17,14 @@
 Groups is a collection of Group (see group.py). Underlying model is a dictionary
 of groups. E.g.
     groups = {
-        "group1": [["repo1", "status1", "path1"]],
-        "group2": [["repo2", "status2", "path2"],
-                   ["repo2", "status2", "path2"]]
+        "group1": [["path1"]],
+        "group2": [["path2"],
+                   ["path3"]]
     }
 """
 
 import sys
+import os
 
 from PySide6.QtWidgets import (
     QApplication,
@@ -62,14 +63,12 @@ def main():
 
     app = QApplication(sys.argv)
 
+    this_script = os.path.realpath(__file__)
+    repo_path   = os.path.join(this_script, "..")
+
     model = {
-        "project1": [
-            ["foo", "up-to-date", "..."],
-            ["bar", "-1, +100", "..."],
-        ],
-        "project2": [
-            ["baz", "up-to-date", "..."],
-        ],
+        "project1": [repo_path, repo_path, repo_path],
+        "project2": [repo_path],
     }
     view   = GroupsView(model)
     window = MainWindow(view)
