@@ -34,13 +34,20 @@ import os
 
 from PySide6 import QtCore, QtWidgets
 from PySide6.QtCore import Qt
+from git import Repo, InvalidGitRepositoryError, NoSuchPathError
 
 def analyze(path):
     """
     given a path to a git repository, return:
     [name, branch, status]
     """
-    return ["name", "branch", "status"]  # WIP
+    name = os.path.basename(path)
+    try:
+        repo = Repo(path)
+        active_branch = repo.active_branch
+        return [name, active_branch.name, "status"]  # WIP
+    except (InvalidGitRepositoryError, NoSuchPathError):
+        return [name, "n/a", "invalid"]
 
 class GroupModel(QtCore.QAbstractTableModel):
     """Model Group"""
@@ -88,9 +95,9 @@ def main():
             self.setCentralWidget(view)
 
     # data for group
-    this_script = os.path.realpath(__file__)
-    repo_path   = os.path.join(this_script, "..")
-    group = [repo_path, repo_path, repo_path]
+    script_dir = os.path.dirname(__file__)
+    parent_dir = os.path.realpath(os.path.join(script_dir, ".."))
+    group = [parent_dir, parent_dir, parent_dir]
 
     # table model
     app    = QtWidgets.QApplication(sys.argv)

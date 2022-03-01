@@ -63,14 +63,13 @@ def main():
 
     app = QApplication(sys.argv)
 
-    this_script = os.path.realpath(__file__)
-    repo_path   = os.path.join(this_script, "..")
-
-    model = {
-        "project1": [repo_path, repo_path, repo_path],
-        "project2": [repo_path],
+    script_dir = os.path.dirname(__file__)
+    parent_dir = os.path.realpath(os.path.join(script_dir, ".."))
+    groups = {
+        "project1": [parent_dir, parent_dir, parent_dir],
+        "project2": [parent_dir],
     }
-    view   = GroupsView(model)
+    view   = GroupsView(groups)
     window = MainWindow(view)
     window.show()
     app.exec()
