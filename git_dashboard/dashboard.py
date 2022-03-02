@@ -19,6 +19,7 @@ Git Dashboard
 
 import os
 import sys
+import signal
 from pathlib import Path
 
 from PySide6.QtWidgets import (
@@ -40,6 +41,10 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setCentralWidget(view)
 
+def sigint_handler(*args): # pylint: disable=unused-argument
+    """Handler for the SIGINT signal."""
+    QApplication.quit()
+
 def main():
     """main routine for test purposes"""
     # create default configuration if needed
@@ -47,11 +52,22 @@ def main():
         home = Path.home()
         create_default_configuration(home)
 
-    app = QApplication(sys.argv)
+    # capture ctrl-c signal so we can exit gracefully
+    signal.signal(signal.SIGINT, sigint_handler)
 
+    # start the app
+    app    = QApplication(sys.argv)
+
+    # model and views
     groups = load_configuration()
     view   = GroupsView(groups)
     window = MainWindow(view)
+
+    # resize primary window to 1/3 width + 1/2 height
+    screen = app.primaryScreen()
+    size   = screen.size()
+    window.resize(size.width()//3, size.height()//2)
+
     window.show()
     app.exec()
 
