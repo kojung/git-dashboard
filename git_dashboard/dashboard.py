@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Git Dashboard
 # Copyright (C) 2022 Jung Ko <kojung@gmail.com>
 #
