@@ -93,6 +93,17 @@ class GroupView(QtWidgets.QTableView):
         super().__init__()
         self.setModel(model)
 
+        # make columns resizable
+        header = self.horizontalHeader()
+        modes = [
+            QtWidgets.QHeaderView.ResizeToContents,  # name
+            QtWidgets.QHeaderView.ResizeToContents,  # branch
+            QtWidgets.QHeaderView.ResizeToContents,  # status
+            QtWidgets.QHeaderView.Stretch,           # path
+        ]
+        for idx, mode in enumerate(modes):
+            header.setSectionResizeMode(idx, mode)
+
 def main():
     """test function"""
     class MainWindow(QtWidgets.QMainWindow):
