@@ -67,11 +67,20 @@ def analyze(path):
     try:
         repo = Repo(path)
         head = repo.head
+        # determine branch
         if head.is_detached:
             branch = f"detached:{short_sha(head.commit)}"
         else:
             branch = head.reference.name
-        return [name, branch, "status", path]  # WIP
+
+        # determine status
+        if repo.is_dirty():
+            status = "dirty"
+        elif repo.untracked_files:
+            status = "untracked"
+        else:
+            status = "clean"
+        return [name, branch, status, path]
     except (InvalidGitRepositoryError, NoSuchPathError):
         return [name, "n/a", "not a git repo", path]
 
