@@ -30,7 +30,8 @@ other useful information to the view component.
 """
 
 from PySide6 import QtCore, QtWidgets
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QSortFilterProxyModel
+from PySide6.QtGui import QFont
 
 class GroupModel(QtCore.QAbstractTableModel):
     """Model Group"""
@@ -65,7 +66,12 @@ class GroupView(QtWidgets.QTableView):
     def __init__(self, model):
         """constructor"""
         super().__init__()
-        self.setModel(model)
+
+        # enable sorting through a proxy model
+        self.setSortingEnabled(True)
+        self.proxyModel = QSortFilterProxyModel()
+        self.proxyModel.setSourceModel(model)
+        self.setModel(self.proxyModel)
 
         # make columns resizable
         header = self.horizontalHeader()
@@ -77,3 +83,7 @@ class GroupView(QtWidgets.QTableView):
         ]
         for idx, mode in enumerate(modes):
             header.setSectionResizeMode(idx, mode)
+
+        # set font size
+        self.setFont(QFont("Arial", 8))
+
