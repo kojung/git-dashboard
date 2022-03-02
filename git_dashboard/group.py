@@ -36,6 +36,10 @@ from PySide6 import QtCore, QtWidgets
 from PySide6.QtCore import Qt
 from git import Repo, InvalidGitRepositoryError, NoSuchPathError
 
+def short_sha(sha):
+    """return a shorter sha signature"""
+    return str(sha)[0:8]
+
 def analyze(path):
     """
     given a path to a git repository, return:
@@ -44,8 +48,12 @@ def analyze(path):
     name = os.path.basename(path)
     try:
         repo = Repo(path)
-        active_branch = repo.active_branch
-        return [name, active_branch.name, "status", path]  # WIP
+        head = repo.head
+        if head.is_detached:
+            branch = f"detached:{short_sha(head.commit)}"
+        else:
+            branch = head.reference.name
+        return [name, branch, "status", path]  # WIP
     except (InvalidGitRepositoryError, NoSuchPathError):
         return [name, "n/a", "not a git repo", path]
 
