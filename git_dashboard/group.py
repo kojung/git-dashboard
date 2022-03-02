@@ -17,11 +17,11 @@
 Group Model and View classes
 
 A group is a collection of related repos. Underlying model is just a list of
-repo paths:
+repo attributes:
 
 group = [
-    ["path1"],
-    ["path2"],
+    ["name1", "branch1", "status1", "path1"],
+    ["name2", "branch2", "status2", "path2"],
     ...
 ]
 
@@ -29,33 +29,8 @@ The group model is in charge of expanding the path into name, branch, status, an
 other useful information to the view component.
 """
 
-import sys
-import os
-
 from PySide6 import QtCore, QtWidgets
 from PySide6.QtCore import Qt
-from git import Repo, InvalidGitRepositoryError, NoSuchPathError
-
-def short_sha(sha):
-    """return a shorter sha signature"""
-    return str(sha)[0:8]
-
-def analyze(path):
-    """
-    given a path to a git repository, return:
-    [name, branch, status]
-    """
-    name = os.path.basename(path)
-    try:
-        repo = Repo(path)
-        head = repo.head
-        if head.is_detached:
-            branch = f"detached:{short_sha(head.commit)}"
-        else:
-            branch = head.reference.name
-        return [name, branch, "status", path]  # WIP
-    except (InvalidGitRepositoryError, NoSuchPathError):
-        return [name, "n/a", "not a git repo", path]
 
 class GroupModel(QtCore.QAbstractTableModel):
     """Model Group"""
@@ -68,8 +43,7 @@ class GroupModel(QtCore.QAbstractTableModel):
     def data(self, index, role):
         """access model data"""
         if role == Qt.DisplayRole:
-            columns = analyze(self.group[index.row()])
-            return columns[index.column()]
+            return self.group[index.row()][index.column()]
         return None
 
     def rowCount(self, _):
@@ -103,35 +77,3 @@ class GroupView(QtWidgets.QTableView):
         ]
         for idx, mode in enumerate(modes):
             header.setSectionResizeMode(idx, mode)
-
-def main():
-    """test function"""
-    class MainWindow(QtWidgets.QMainWindow):
-        """main window"""
-        def __init__(self, view):
-            """constructor"""
-            super().__init__()
-            self.setCentralWidget(view)
-
-    # data for group
-    script_dir = os.path.dirname(__file__)
-    parent_dir = os.path.realpath(os.path.join(script_dir, ".."))
-    group = [parent_dir, parent_dir, parent_dir]
-
-    # table model
-    app    = QtWidgets.QApplication(sys.argv)
-    model  = GroupModel(group)
-    view   = GroupView(model)
-    window = MainWindow(view)
-    window.show()
-
-    # show that model can change after show()
-    model.layoutAboutToBeChanged.emit() # pylint: disable=no-member
-    group.append(repo_path)             # show that data can change
-    model.layoutChanged.emit()          # pylint: disable=no-member
-
-    # main loop
-    app.exec()
-
-if __name__ == "__main__":
-    main()

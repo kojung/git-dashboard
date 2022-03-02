@@ -21,11 +21,10 @@ Configuration is stored as a YAML file with the following format:
 """
 
 import os
-from pathlib import Path
-import copy
 
 from appdirs import user_config_dir
 import yaml
+from git import Repo, InvalidGitRepositoryError, NoSuchPathError
 
 import git_dashboard
 
@@ -55,29 +54,44 @@ def create_default_configuration(root):
     with open(CONFIG, "w", encoding="utf-8") as cfg:
         yaml.dump(repos, cfg)
 
+def short_sha(sha):
+    """return a shorter sha signature"""
+    return str(sha)[0:8]
+
+def analyze(path):
+    """
+    given a path to a git repository, return:
+    [name, branch, status]
+    """
+    name = os.path.basename(path)
+    try:
+        repo = Repo(path)
+        head = repo.head
+        if head.is_detached:
+            branch = f"detached:{short_sha(head.commit)}"
+        else:
+            branch = head.reference.name
+        return [name, branch, "status", path]  # WIP
+    except (InvalidGitRepositoryError, NoSuchPathError):
+        return [name, "n/a", "not a git repo", path]
+
 def load_configuration():
     """load configuration"""
     with open(CONFIG, "r", encoding="utf-8") as cfg:
         groups = yaml.safe_load(cfg)
-    for group in groups.values():
-        expanded_dirs = []
-        group_copy    = copy.copy(group)
-        # loop through each group and expand directories if needed
-        # use a copy of the group because we are modifing the list as we iterate through the list
-        for dirname in group_copy:
+
+    # iterate through each group and do:
+    # 1. expand paths that contain other git repos
+    # 2. analyze git repos
+    results = {}
+    for name, group in groups.items():
+        # expand directories that contain other git repos
+        results[name] = []
+        for dirname in group:
             _, dirnames, _ = next(os.walk(dirname))
             if ".git" not in dirnames:
-                expanded_dirs += find_git_repos_from_path(dirname, 0, 1) 
-                group.remove(dirname)
-        group += expanded_dirs
-
-    return groups
-
-def main():
-    """for test purposes"""
-    home = Path.home()
-    create_default_configuration(home)
-    print(f"Created default configuration at '{CONFIG}'")
-
-if __name__ == "__main__":
-    main()
+                for sub_repo in find_git_repos_from_path(dirname, 0, 1):
+                    results[name].append(analyze(sub_repo))
+            else:
+                results[name].append(analyze(dirname))
+    return results
