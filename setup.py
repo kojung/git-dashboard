@@ -38,7 +38,8 @@ setup(
     author_email="kojung@gmail.com",
     license="GPL",
     platforms=['any'],
-    packages=find_packages(exclude=['tests']),
+    packages=find_packages('src'),
+    package_dir={'': 'src'},
     python_requires='>=3.6',
     install_requires=load_requirements(),
     scripts=[
@@ -49,7 +50,7 @@ setup(
     url='https://github.com/kojung/git-dashboard',
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: GNU General Public License (GPL)"
+        "License :: OSI Approved :: GNU General Public License (GPL)",
         "Operating System :: OS Independent",
     ],
 )
