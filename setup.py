@@ -2,28 +2,7 @@
 Pypi setup file
 """
 
-import os
-
 from setuptools import setup, find_packages
-
-import git_dashboard
-
-PATH_ROOT = os.path.dirname(__file__)
-
-def load_requirements():
-    """Load requirements.txt with comment support"""
-    lines = []
-    comment_char = '#'
-    with open(os.path.join(PATH_ROOT, 'requirements.txt'), 'r', encoding='utf-8') as file:
-        lines += [ln.strip() for ln in file.readlines()]
-    reqs = []
-    for ln in lines:
-        # filter all comments
-        if comment_char in ln:
-            ln = ln[:ln.index(comment_char)]
-        if ln:  # if requirement is not empty
-            reqs.append(ln)
-    return reqs
 
 def load_readme():
     """Load README.md as string"""
@@ -32,7 +11,7 @@ def load_readme():
 
 setup(
     name='git_dashboard',
-    version=git_dashboard.__version__,
+    version='0.1.3',
     description="Git dashboard",
     author="Jung Ko",
     author_email="kojung@gmail.com",
@@ -41,7 +20,13 @@ setup(
     packages=find_packages('src'),
     package_dir={'': 'src'},
     python_requires='>=3.6',
-    install_requires=load_requirements(),
+    install_requires=[
+        "appdirs",
+        "GitPython",
+        "pathlib",
+        "PySide6",
+        "PyYAML",
+    ],
     scripts=[
         'bin/git-dashboard',
     ],
