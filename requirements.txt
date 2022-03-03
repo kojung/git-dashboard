@@ -1,6 +1,6 @@
-pyside6
-pylint
 appdirs
-pyyaml
-pathlib
 GitPython
+pathlib
+pylint
+PySide6
+PyYAML

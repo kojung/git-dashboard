@@ -17,20 +17,18 @@
 Groups is a collection of Group (see group.py). Underlying model is a dictionary
 of groups. E.g.
     groups = {
-        "group1": [["path1"]],
-        "group2": [["path2"],
-                   ["path3"]]
+        "group1": [
+            ["name1", "branch1", "status1", "path1"],
+            ["name2", "branch2", "status2", "path2"],
+            ...
+        ],
+        "group2": [
+            ["name3", "branch3", "status3", "path3"],
+        ]
     }
 """
 
-import sys
-import os
-
-from PySide6.QtWidgets import (
-    QApplication,
-    QMainWindow,
-    QTabWidget,
-)
+from PySide6.QtWidgets import QTabWidget
 
 from git_dashboard.group import (
     GroupView,
@@ -47,32 +45,9 @@ class GroupsView(QTabWidget):
         self.setTabPosition(QTabWidget.West)
         self.setMovable(True)
 
+        self.models = {}
         for name, group in groups.items():
             model = GroupModel(group)
             view  = GroupView(model)
             self.addTab(view, name)
-
-def main():
-    """main routine for test purposes"""
-    class MainWindow(QMainWindow):
-        """main window"""
-        def __init__(self, view):
-            """constructor"""
-            super().__init__()
-            self.setCentralWidget(view)
-
-    app = QApplication(sys.argv)
-
-    script_dir = os.path.dirname(__file__)
-    parent_dir = os.path.realpath(os.path.join(script_dir, ".."))
-    groups = {
-        "project1": [parent_dir, parent_dir, parent_dir],
-        "project2": [parent_dir],
-    }
-    view   = GroupsView(groups)
-    window = MainWindow(view)
-    window.show()
-    app.exec()
-
-if __name__ == "__main__":
-    main()
+            self.models[name] = model
