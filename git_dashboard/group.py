@@ -29,6 +29,8 @@ The group model is in charge of expanding the path into name, branch, status, an
 other useful information to the view component.
 """
 
+import re
+
 from PySide6 import QtCore, QtWidgets, QtGui
 from PySide6.QtCore import Qt, QSortFilterProxyModel
 from PySide6.QtGui import QFont
@@ -41,18 +43,31 @@ class GroupModel(QtCore.QAbstractTableModel):
         self.header = ["name", "branch", "status", "path"]
         self.group = group
 
-    def data(self, index, role):
+    def data(self, index, role): # pylint: disable=too-many-return-statements
         """access model data"""
+        # DisplayRole
         if role == Qt.DisplayRole:
             return self.group[index.row()][index.column()]
+
+        # Color
         if index.isValid() and role == Qt.ForegroundRole:
-            if index.data() == "clean":
-                return QtGui.QBrush(QtCore.Qt.darkGreen)
-            if index.data() == "dirty":
-                return QtGui.QBrush(QtCore.Qt.darkRed)
-            if index.data() == "untracked":
-                return QtGui.QBrush(QtCore.Qt.blue)
-            return QtGui.QBrush(QtCore.Qt.black)
+            # branch color
+            if index.column() == 1:
+                if re.search(r'master|develop', index.data()):
+                    return QtGui.QBrush(QtCore.Qt.darkGreen)
+                return QtGui.QBrush(QtCore.Qt.black)
+
+            # status color
+            if index.column() == 2:
+                if index.data() == "clean":
+                    return QtGui.QBrush(QtCore.Qt.darkGreen)
+                if index.data() == "dirty":
+                    return QtGui.QBrush(QtCore.Qt.darkRed)
+                if index.data() == "untracked":
+                    return QtGui.QBrush(QtCore.Qt.blue)
+                return QtGui.QBrush(QtCore.Qt.black)
+
+        # Color for branches
         return None
 
     def rowCount(self, _):
