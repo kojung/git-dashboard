@@ -29,7 +29,7 @@ The group model is in charge of expanding the path into name, branch, status, an
 other useful information to the view component.
 """
 
-from PySide6 import QtCore, QtWidgets
+from PySide6 import QtCore, QtWidgets, QtGui
 from PySide6.QtCore import Qt, QSortFilterProxyModel
 from PySide6.QtGui import QFont
 
@@ -45,6 +45,14 @@ class GroupModel(QtCore.QAbstractTableModel):
         """access model data"""
         if role == Qt.DisplayRole:
             return self.group[index.row()][index.column()]
+        if index.isValid() and role == Qt.ForegroundRole:
+            if index.data() == "clean":
+                return QtGui.QBrush(QtCore.Qt.darkGreen)
+            if index.data() == "dirty":
+                return QtGui.QBrush(QtCore.Qt.darkRed)
+            if index.data() == "untracked":
+                return QtGui.QBrush(QtCore.Qt.blue)
+            return QtGui.QBrush(QtCore.Qt.black)
         return None
 
     def rowCount(self, _):
@@ -69,9 +77,9 @@ class GroupView(QtWidgets.QTableView):
 
         # enable sorting through a proxy model
         self.setSortingEnabled(True)
-        self.proxyModel = QSortFilterProxyModel()
-        self.proxyModel.setSourceModel(model)
-        self.setModel(self.proxyModel)
+        self.proxy_model = QSortFilterProxyModel()
+        self.proxy_model.setSourceModel(model)
+        self.setModel(self.proxy_model)
 
         # make columns resizable
         header = self.horizontalHeader()
@@ -86,4 +94,3 @@ class GroupView(QtWidgets.QTableView):
 
         # set font size
         self.setFont(QFont("Arial", 8))
-
