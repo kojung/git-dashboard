@@ -45,7 +45,9 @@ class GroupsView(QTabWidget):
         self.setTabPosition(QTabWidget.West)
         self.setMovable(True)
 
+        self.models = {}
         for name, group in groups.items():
             model = GroupModel(group)
             view  = GroupView(model)
             self.addTab(view, name)
+            self.models[name] = model

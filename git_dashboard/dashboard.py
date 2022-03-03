@@ -23,7 +23,9 @@ import os
 import sys
 import signal
 from pathlib import Path
+import functools
 
+from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -47,6 +49,14 @@ def sigint_handler(*args): # pylint: disable=unused-argument
     """Handler for the SIGINT signal."""
     QApplication.quit()
 
+def refresh(view):
+    """refresh repo status"""
+    groups = load_configuration()
+    for name, model in view.models.items():
+        model.layoutAboutToBeChanged.emit()        # pylint: disable=no-member
+        model.group = groups[name]
+        model.layoutChanged.emit()                 # pylint: disable=no-member
+
 def main():
     """main routine for test purposes"""
     # create default configuration if needed
@@ -64,6 +74,13 @@ def main():
     groups = load_configuration()
     view   = GroupsView(groups)
     window = MainWindow(view)
+
+    # status refresh rate
+    refresh_callback = functools.partial(refresh, view=view)
+
+    timer = QTimer()
+    timer.start(5000)  # 5 seconds
+    timer.timeout.connect(refresh_callback)  # pylint: disable=no-member
 
     # resize primary window to 1/3 width + 1/2 height
     screen = app.primaryScreen()
