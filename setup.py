@@ -46,4 +46,10 @@ setup(
     ],
     long_description=load_readme(),
     long_description_content_type='text/markdown',
+    url='https://github.com/kojung/git-dashboard',
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: GNU General Public License (GPL)"
+        "Operating System :: OS Independent",
+    ],
 )

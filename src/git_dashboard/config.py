@@ -45,13 +45,13 @@ def find_git_repos_from_path(dirname, depth=0, maxdepth=-1):
             results += find_git_repos_from_path(absname, depth+1, maxdepth)
     return results
 
-def create_default_configuration(root):
+def create_default_configuration(root, group='home', config=CONFIG):
     """scan for git repos starting from root"""
     print(f"Scanning git repos from '{root}': ", end='')
-    repos = {'home': find_git_repos_from_path(root)}
+    repos = {group: find_git_repos_from_path(root)}
     print(f"found {len(repos['home'])} git repos")
-    os.makedirs(CONFIG_DIR, exist_ok=True)
-    with open(CONFIG, "w", encoding="utf-8") as cfg:
+    os.makedirs(os.path.dirname(config), exist_ok=True)
+    with open(config, "w", encoding="utf-8") as cfg:
         yaml.dump(repos, cfg)
 
 def short_sha(sha):
@@ -84,9 +84,9 @@ def analyze(path):
     except (InvalidGitRepositoryError, NoSuchPathError):
         return [name, "n/a", "not a git repo", path]
 
-def load_configuration():
+def load_configuration(config=CONFIG):
     """load configuration"""
-    with open(CONFIG, "r", encoding="utf-8") as cfg:
+    with open(config, "r", encoding="utf-8") as cfg:
         groups = yaml.safe_load(cfg)
 
     # iterate through each group and do:

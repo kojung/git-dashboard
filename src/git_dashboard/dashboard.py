@@ -50,9 +50,9 @@ def sigint_handler(*args): # pylint: disable=unused-argument
     """Handler for the SIGINT signal."""
     QApplication.quit()
 
-def refresh(view):
+def refresh(view, config):
     """refresh repo status"""
-    groups = load_configuration()
+    groups = load_configuration(config)
     for name, model in view.models.items():
         model.layoutAboutToBeChanged.emit()        # pylint: disable=no-member
         model.group = groups[name]
@@ -72,7 +72,7 @@ def main():
     # create default configuration if needed
     if not os.path.exists(args.config):
         home = Path.home()
-        create_default_configuration(home)
+        create_default_configuration(home, 'home', args.config)
 
     # capture ctrl-c signal so we can exit gracefully
     signal.signal(signal.SIGINT, sigint_handler)
@@ -81,12 +81,12 @@ def main():
     app    = QApplication(sys.argv)
 
     # model and views
-    groups = load_configuration()
+    groups = load_configuration(args.config)
     view   = GroupsView(groups)
     window = MainWindow(view)
 
     # status refresh rate
-    refresh_callback = functools.partial(refresh, view=view)
+    refresh_callback = functools.partial(refresh, view=view, config=args.config)
 
     timer = QTimer()
     timer.start(args.refresh * 1000)  # in milliseconds
