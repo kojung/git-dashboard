@@ -1,6 +1,5 @@
 appdirs
 GitPython
-pathlib
 pylint
 PySide6
 PyYAML

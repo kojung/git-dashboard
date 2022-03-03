@@ -11,7 +11,7 @@ def load_readme():
 
 setup(
     name='git_dashboard',
-    version='0.1.4',
+    version='0.1.5',
     description="Git dashboard",
     author="Jung Ko",
     author_email="kojung@gmail.com",
@@ -23,7 +23,6 @@ setup(
     install_requires=[
         "appdirs",
         "GitPython",
-        "pathlib",
         "PySide6",
         "PyYAML",
     ],
