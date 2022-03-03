@@ -4,7 +4,7 @@
 
 Repositories can be organized into groups, so one can switch from one group to another seamlessly.
 
-![Screenshot](https://github.com/kojung/git-dashboard/raw/master/assets/linux.png)
+![Screenshot](https://github.com/kojung/git-dashboard/raw/master/assets/linux.png?raw=True)
 
 # Installation
 
