@@ -34,6 +34,7 @@ import re
 from PySide6 import QtCore, QtWidgets, QtGui
 from PySide6.QtCore import Qt, QSortFilterProxyModel
 from PySide6.QtGui import QFont
+from PySide6.QtWidgets import QApplication
 
 class GroupModel(QtCore.QAbstractTableModel):
     """Model Group"""
@@ -108,4 +109,7 @@ class GroupView(QtWidgets.QTableView):
             header.setSectionResizeMode(idx, mode)
 
         # set font size
-        self.setFont(QFont("Arial", 8))
+        default_font = QApplication.font()
+        default_font_size = default_font.pointSize()
+        smaller_font_size = int(default_font_size * 0.8)
+        self.setFont(QFont("Arial", smaller_font_size))
