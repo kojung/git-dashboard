@@ -35,15 +35,22 @@ def find_git_repos_from_path(dirname, depth=0, maxdepth=-1):
     """
     recursively find all git repos given the path. stop recusion when `depth == maxdepth`
     """
-    results = []
-    dirpath, dirnames, _ = next(os.walk(dirname))
-    if ".git" in dirnames:
-        return [dirpath]
-    if depth != maxdepth:
-        for name in dirnames:
-            absname = os.path.join(dirname, name)
-            results += find_git_repos_from_path(absname, depth+1, maxdepth)
-    return results
+    # avoid symlinks
+    if os.path.islink(dirname):
+        return []
+    try:
+        results = []
+        dirpath, dirnames, _ = next(os.walk(dirname))
+        if ".git" in dirnames:
+            return [dirpath]
+        if depth != maxdepth:
+            for name in dirnames:
+                absname = os.path.join(dirname, name)
+                results += find_git_repos_from_path(absname, depth+1, maxdepth)
+        return results
+    except StopIteration:
+        # skip directories where we don't have permission
+        return []
 
 def create_default_configuration(root, group='home', config=CONFIG):
     """scan for git repos starting from root"""
