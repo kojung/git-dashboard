@@ -24,6 +24,7 @@ import sys
 import signal
 from pathlib import Path
 import functools
+import argparse
 
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import (
@@ -57,10 +58,19 @@ def refresh(view):
         model.group = groups[name]
         model.layoutChanged.emit()                 # pylint: disable=no-member
 
+def parser():
+    """argument parser"""
+    par = argparse.ArgumentParser(description="Git dashboard")
+    par.add_argument("-r", "--refresh",  type=int, default=10, help="Refresh interval in seconds. Default=10")
+    par.add_argument("-c", "--config",  default=CONFIG, help=f"Configuration file. Default={CONFIG}")
+    return par
+
 def main():
     """main routine for test purposes"""
+    args = parser().parse_args()
+
     # create default configuration if needed
-    if not os.path.exists(CONFIG):
+    if not os.path.exists(args.config):
         home = Path.home()
         create_default_configuration(home)
 
@@ -79,7 +89,7 @@ def main():
     refresh_callback = functools.partial(refresh, view=view)
 
     timer = QTimer()
-    timer.start(5000)  # 5 seconds
+    timer.start(args.refresh * 1000)  # in milliseconds
     timer.timeout.connect(refresh_callback)  # pylint: disable=no-member
 
     # resize primary window to 1/3 width + 1/2 height
