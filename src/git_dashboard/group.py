@@ -49,7 +49,7 @@ class GroupModel(QtCore.QAbstractTableModel):
     def __init__(self, group):
         """Constructor"""
         super().__init__()
-        self.header = ["name", "branch", "status", "path"]
+        self.header = ["name", "branch", "status"]
         self.group = group
 
     def data(self, index, role): # pylint: disable=too-many-return-statements
@@ -77,6 +77,8 @@ class GroupModel(QtCore.QAbstractTableModel):
             # status tooltip
             if index.column() == Column.STATUS and index.data() != "clean":
                 return "-:behind\n+:ahead\nu:untracked\ns:staged"
+            if index.column() in [Column.NAME, Column.BRANCH]:
+                return self.group[index.row()][Column.PATH]
 
         return None
 
@@ -112,7 +114,6 @@ class GroupView(QtWidgets.QTableView):
             QtWidgets.QHeaderView.ResizeToContents,  # name
             QtWidgets.QHeaderView.ResizeToContents,  # branch
             QtWidgets.QHeaderView.ResizeToContents,  # status
-            QtWidgets.QHeaderView.Stretch,           # path
         ]
         for idx, mode in enumerate(modes):
             header.setSectionResizeMode(idx, mode)
