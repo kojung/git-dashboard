@@ -24,7 +24,12 @@ import os
 
 from appdirs import user_config_dir
 import yaml
-from git import Repo, InvalidGitRepositoryError, NoSuchPathError
+from git import (
+    Repo,
+    InvalidGitRepositoryError,
+    NoSuchPathError,
+    GitCommandError
+)
 
 import git_dashboard
 
@@ -80,13 +85,32 @@ def analyze(path):
         else:
             branch = head.reference.name
 
-        # determine status
-        if repo.is_dirty():
-            status = "dirty"
-        elif repo.untracked_files:
-            status = "untracked"
+        # determine tracking remote
+        try:
+            cmd = "git rev-parse --abbrev-ref --symbolic-full-name @{u}"
+            remote = repo.git.execute(cmd, shell=True)
+
+            # determine behind/ahead stats
+            cmd = f"git rev-list --left-right --count HEAD...{remote}"
+            ahead, behind = [int(x) for x in repo.git.execute(cmd, shell=True).split()]
+        except GitCommandError:
+            remote = None
+
+        # determine untracked files
+        untracked = len(repo.untracked_files)
+
+        if remote:
+            if ahead == 0 and behind == 0 and untracked == 0:
+                status = "clean"
+            else:
+                status = f"-{behind}/+{ahead}/u{untracked}"
         else:
-            status = "clean"
+            if repo.is_dirty():
+                status = "dirty"
+            elif untracked:
+                status = "{untracked} untracked"
+            else:
+                status = "clean"
         return [name, branch, status, path]
     except (InvalidGitRepositoryError, NoSuchPathError):
         return [name, "n/a", "not a git repo", path]

@@ -62,11 +62,9 @@ class GroupModel(QtCore.QAbstractTableModel):
             if index.column() == 2:
                 if index.data() == "clean":
                     return QtGui.QBrush(QtCore.Qt.darkGreen)
-                if index.data() == "dirty":
-                    return QtGui.QBrush(QtCore.Qt.darkRed)
                 if index.data() == "untracked":
                     return QtGui.QBrush(QtCore.Qt.blue)
-                return QtGui.QBrush(QtCore.Qt.black)
+                return QtGui.QBrush(QtCore.Qt.darkRed)
 
         # Color for branches
         return None
