@@ -37,7 +37,7 @@ from git_dashboard.group import (
 
 class GroupsView(QTabWidget):
     """View class for groups"""
-    def __init__(self, groups):
+    def __init__(self, groups, args):
         """constructor"""
         super().__init__()
         self.groups = groups
@@ -48,6 +48,6 @@ class GroupsView(QTabWidget):
         self.models = {}
         for name, group in groups.items():
             model = GroupModel(group)
-            view  = GroupView(model)
+            view  = GroupView(model, args)
             self.addTab(view, name)
             self.models[name] = model

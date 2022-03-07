@@ -63,6 +63,7 @@ def parser():
     par = argparse.ArgumentParser(description="Git dashboard")
     par.add_argument("-r", "--refresh",  type=int, default=10, help="Refresh interval in seconds. Default=10")
     par.add_argument("-c", "--config",  default=CONFIG, help=f"Configuration file. Default={CONFIG}")
+    par.add_argument("-s", "--font-scale", type=float, default=1.0, help="Font scale. Default=1.0")
     return par
 
 def main():
@@ -82,7 +83,7 @@ def main():
 
     # model and views
     groups = load_configuration(args.config)
-    view   = GroupsView(groups)
+    view   = GroupsView(groups, args)
     window = MainWindow(view)
 
     # status refresh rate
@@ -92,10 +93,10 @@ def main():
     timer.start(args.refresh * 1000)  # in milliseconds
     timer.timeout.connect(refresh_callback)  # pylint: disable=no-member
 
-    # resize primary window to 1/3 width + 1/2 height
+    # resize primary window to 1/5 width + 1/2 height
     screen = app.primaryScreen()
     size   = screen.size()
-    window.resize(size.width()//3, size.height()//2)
+    window.resize(size.width()//5, size.height()//2)
 
     window.show()
     app.exec()

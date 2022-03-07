@@ -98,7 +98,7 @@ class GroupModel(QtCore.QAbstractTableModel):
 
 class GroupView(QtWidgets.QTableView):
     """View for group"""
-    def __init__(self, model):
+    def __init__(self, model, args):
         """constructor"""
         super().__init__()
 
@@ -121,5 +121,5 @@ class GroupView(QtWidgets.QTableView):
         # set font size
         default_font = QApplication.font()
         default_font_size = default_font.pointSize()
-        smaller_font_size = int(default_font_size * 0.8)
+        smaller_font_size = int(default_font_size * args.font_scale)
         self.setFont(QFont("Arial", smaller_font_size))
