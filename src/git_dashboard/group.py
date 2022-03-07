@@ -30,11 +30,19 @@ other useful information to the view component.
 """
 
 import re
+from enum import IntEnum
 
 from PySide6 import QtCore, QtWidgets, QtGui
 from PySide6.QtCore import Qt, QSortFilterProxyModel
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QApplication
+
+class Column(IntEnum):
+    """column enums"""
+    NAME   = 0
+    BRANCH = 1
+    STATUS = 2
+    PATH   = 3
 
 class GroupModel(QtCore.QAbstractTableModel):
     """Model Group"""
@@ -50,21 +58,26 @@ class GroupModel(QtCore.QAbstractTableModel):
         if role == Qt.DisplayRole:
             return self.group[index.row()][index.column()]
 
-        # Color
+        # ForeGroundRole
         if index.isValid() and role == Qt.ForegroundRole:
             # branch color
-            if index.column() == 1:
+            if index.column() == Column.BRANCH:
                 if re.search(r'master|develop', index.data()):
                     return QtGui.QBrush(QtCore.Qt.darkGreen)
                 return QtGui.QBrush(QtCore.Qt.black)
 
             # status color
-            if index.column() == 2:
+            if index.column() == Column.STATUS:
                 if index.data() == "clean":
                     return QtGui.QBrush(QtCore.Qt.darkGreen)
                 return QtGui.QBrush(QtCore.Qt.darkRed)
 
-        # Color for branches
+        # ToolTipRole
+        if index.isValid() and role == Qt.ToolTipRole:
+            # status tooltip
+            if index.column() == Column.STATUS and index.data() != "clean":
+                return "-:behind\n+:ahead\nu:untracked\ns:staged"
+
         return None
 
     def rowCount(self, _):
