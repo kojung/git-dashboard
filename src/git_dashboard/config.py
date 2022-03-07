@@ -85,33 +85,37 @@ def analyze(path):
         else:
             branch = head.reference.name
 
-        # determine tracking remote
+        status = []
+        # check for modified files
+        if repo.is_dirty():
+            status.append("dirty")
+        else:
+            status.append("clean")
+
+        # check for ahead/behind w.r.t to upstream ref
         try:
             cmd = "git rev-parse --abbrev-ref --symbolic-full-name @{u}"
-            remote = repo.git.execute(cmd, shell=True)
+            upstream = repo.git.execute(cmd, shell=True)
 
-            # determine behind/ahead stats
-            cmd = f"git rev-list --left-right --count HEAD...{remote}"
+            cmd = f"git rev-list --left-right --count HEAD...{upstream}"
             ahead, behind = [int(x) for x in repo.git.execute(cmd, shell=True).split()]
+
+            status += [f"-{behind}", f"+{ahead}"]
         except GitCommandError:
-            remote = None
+            pass
 
-        # determine untracked files
-        untracked = len(repo.untracked_files)
+        # count untracked files
+        status.append(f"u{len(repo.untracked_files)}")
 
-        if remote:
-            if ahead == 0 and behind == 0 and untracked == 0:
-                status = "clean"
-            else:
-                status = f"-{behind}/+{ahead}/u{untracked}"
-        else:
-            if repo.is_dirty():
-                status = "dirty"
-            elif untracked:
-                status = "{untracked} untracked"
-            else:
-                status = "clean"
-        return [name, branch, status, path]
+        # count staged files
+        status.append(f"s{len(repo.index.diff('HEAD'))}")
+
+        joined_status = "/".join(status)
+
+        # simplify the clean case
+        if joined_status in ["clean/-0/+0/u0/s0", "clean/u0/s0"]:
+            joined_status = "clean"
+        return [name, branch, joined_status, path]
     except (InvalidGitRepositoryError, NoSuchPathError):
         return [name, "n/a", "not a git repo", path]
 
