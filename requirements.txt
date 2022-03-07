@@ -3,3 +3,4 @@ GitPython
 pylint
 PySide6
 PyYAML
+twine
