@@ -11,7 +11,7 @@ def load_readme():
 
 setup(
     name='git_dashboard',
-    version='0.1.6',
+    version='0.1.7',
     description="Git dashboard",
     author="Jung Ko",
     author_email="kojung@gmail.com",
