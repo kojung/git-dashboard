@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Make status column stretched
+
 ## [0.1.6] - 2022/03/06
 
 ### Added

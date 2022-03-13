@@ -113,7 +113,7 @@ class GroupView(QtWidgets.QTableView):
         modes = [
             QtWidgets.QHeaderView.ResizeToContents,  # name
             QtWidgets.QHeaderView.ResizeToContents,  # branch
-            QtWidgets.QHeaderView.ResizeToContents,  # status
+            QtWidgets.QHeaderView.Stretch,           # status
         ]
         for idx, mode in enumerate(modes):
             header.setSectionResizeMode(idx, mode)
