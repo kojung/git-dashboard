@@ -30,6 +30,12 @@ from git import (
     NoSuchPathError,
     GitCommandError
 )
+from git.compat import (
+    defenc
+)
+from git.util import (
+    finalize_process
+)
 
 import git_dashboard
 
@@ -70,6 +76,24 @@ def short_sha(sha):
     """return a shorter sha signature"""
     return str(sha)[0:8]
 
+def count_untracked_files(repo) -> int:
+    """
+    return number of untracked files in repo
+
+    :note: equivalent to `return len(repo.untracked_files)` but that operation is too expensive
+    if all we want is the number of untracked files.
+    """
+    proc = repo.git.status(porcelain=True, untracked_files=True, as_process=True)
+    # Untracked files preffix in porcelain mode
+    prefix = "?? "
+    untracked_files = 0
+    for line in proc.stdout:
+        line = line.decode(defenc)
+        if line.startswith(prefix):
+            untracked_files += 1
+    finalize_process(proc)
+    return untracked_files
+
 def analyze(path):
     """
     given a path to a git repository, return:
@@ -105,7 +129,7 @@ def analyze(path):
             pass
 
         # count untracked files
-        status.append(f"u{len(repo.untracked_files)}")
+        status.append(f"u{count_untracked_files(repo)}")
 
         # count staged files
         status.append(f"s{len(repo.index.diff('HEAD'))}")
