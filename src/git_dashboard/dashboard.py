@@ -50,10 +50,6 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setCentralWidget(view)
 
-def sigint_handler(*args): # pylint: disable=unused-argument
-    """Handler for the SIGINT signal."""
-    QApplication.quit()
-
 class RefreshThread(QThread):
     """Separate thread used to query git repos in the background"""
     ready = Signal(object)   # Signal must be class, not instance member
@@ -73,9 +69,12 @@ class RefreshThread(QThread):
 def parser():
     """argument parser"""
     par = argparse.ArgumentParser(description="Git dashboard")
-    par.add_argument("-r", "--refresh",  type=int, default=10, help="Refresh interval in seconds. Default=10")
-    par.add_argument("-c", "--config",  default=CONFIG, help=f"Configuration file. Default={CONFIG}")
-    par.add_argument("-s", "--font-scale", type=float, default=1.0, help="Font scale. Default=1.0")
+    par.add_argument("-r", "--refresh",  type=int, default=10,
+        help="Refresh interval in seconds. Default=10")
+    par.add_argument("-c", "--config",  default=CONFIG,
+        help=f"Configuration file. Default={CONFIG}")
+    par.add_argument("-s", "--font-scale", type=float, default=1.0,
+        help="Font scale. Default=1.0")
     return par
 
 def main():
@@ -87,11 +86,8 @@ def main():
         home = Path.home()
         create_default_configuration(home, 'home', args.config)
 
-    # capture ctrl-c signal so we can exit gracefully
-    signal.signal(signal.SIGINT, sigint_handler)
-
     # start the app
-    app    = QApplication(sys.argv)
+    app = QApplication(sys.argv)
 
     # model and views
     groups = load_configuration(args.config)
@@ -109,6 +105,14 @@ def main():
     refresh_thread = RefreshThread(args.config, args.refresh)
     refresh_thread.ready.connect(refresh_func)
     refresh_thread.start()
+
+    def sigint_handler(*args): # pylint: disable=unused-argument
+        """Handler for the SIGINT signal."""
+        refresh_thread.quit()
+        QApplication.quit()
+
+    # capture ctrl-c signal so we can exit gracefully
+    signal.signal(signal.SIGINT, sigint_handler)
 
     # resize primary window to 1/5 width + 1/2 height
     screen = app.primaryScreen()
