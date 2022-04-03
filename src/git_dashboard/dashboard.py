@@ -23,10 +23,14 @@ import os
 import sys
 import signal
 from pathlib import Path
-import functools
 import argparse
+import time
 
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import (
+    Signal,
+    QThread,
+)
+
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -41,29 +45,51 @@ from git_dashboard.config import (
 
 class MainWindow(QMainWindow):
     """main window"""
-    def __init__(self, view):
+    def __init__(self, view, refresh_thread):
         """constructor"""
         super().__init__()
+        self.refresh_thread = refresh_thread
         self.setCentralWidget(view)
 
-def sigint_handler(*args): # pylint: disable=unused-argument
-    """Handler for the SIGINT signal."""
-    QApplication.quit()
+    def closeEvent(self, event):
+        """gracefully terminate the application by stopping refresh_thread"""
+        self.refresh_thread.stop = True
+        while not self.refresh_thread.isFinished():
+            time.sleep(1)
+        event.accept()  # let the window close
 
-def refresh(view, config):
-    """refresh repo status"""
-    groups = load_configuration(config)
-    for name, model in view.models.items():
-        model.layoutAboutToBeChanged.emit()        # pylint: disable=no-member
-        model.group = groups[name]
-        model.layoutChanged.emit()                 # pylint: disable=no-member
+class RefreshThread(QThread):
+    """Separate thread used to query git repos in the background"""
+    ready = Signal(object)   # Signal must be class, not instance member
+    def __init__(self, config, refresh):
+        """constructor"""
+        super().__init__()
+        self.config  = config
+        self.refresh = refresh
+        self.stop    = False
+
+    def run(self):
+        """thread run method"""
+        while True:
+            groups = load_configuration(self.config)
+            self.ready.emit(groups)
+            # wait for `refresh` seconds, or until stop is issued
+            sleep_cnt = 0
+            while not self.stop and sleep_cnt < self.refresh:
+                time.sleep(1)
+                sleep_cnt += 1
+            if self.stop:
+                break
 
 def parser():
     """argument parser"""
     par = argparse.ArgumentParser(description="Git dashboard")
-    par.add_argument("-r", "--refresh",  type=int, default=10, help="Refresh interval in seconds. Default=10")
-    par.add_argument("-c", "--config",  default=CONFIG, help=f"Configuration file. Default={CONFIG}")
-    par.add_argument("-s", "--font-scale", type=float, default=1.0, help="Font scale. Default=1.0")
+    par.add_argument("-r", "--refresh",  type=int, default=10,
+        help="Refresh interval in seconds. Default=10")
+    par.add_argument("-c", "--config",  default=CONFIG,
+        help=f"Configuration file. Default={CONFIG}")
+    par.add_argument("-s", "--font-scale", type=float, default=1.0,
+        help="Font scale. Default=1.0")
     return par
 
 def main():
@@ -75,23 +101,37 @@ def main():
         home = Path.home()
         create_default_configuration(home, 'home', args.config)
 
-    # capture ctrl-c signal so we can exit gracefully
-    signal.signal(signal.SIGINT, sigint_handler)
-
     # start the app
-    app    = QApplication(sys.argv)
+    app = QApplication(sys.argv)
 
     # model and views
     groups = load_configuration(args.config)
     view   = GroupsView(groups, args)
-    window = MainWindow(view)
 
-    # status refresh rate
-    refresh_callback = functools.partial(refresh, view=view, config=args.config)
+    def refresh_func(groups):
+        """refresh repo status"""
+        for name, model in view.models.items():
+            model.layoutAboutToBeChanged.emit()  # pylint: disable=no-member
+            model.group = groups[name]
+            model.layoutChanged.emit()           # pylint: disable=no-member
 
-    timer = QTimer()
-    timer.start(args.refresh * 1000)  # in milliseconds
-    timer.timeout.connect(refresh_callback)  # pylint: disable=no-member
+    # start refresh thread and connect it refresh_func
+    refresh_thread = RefreshThread(args.config, args.refresh)
+    refresh_thread.ready.connect(refresh_func)
+    refresh_thread.start()
+
+    def sigint_handler(*args): # pylint: disable=unused-argument
+        """Handler for the SIGINT signal."""
+        refresh_thread.stop = True
+        while not refresh_thread.isFinished():
+            time.sleep(1)
+        QApplication.quit()
+
+    # instantiate main window
+    window = MainWindow(view, refresh_thread)
+
+    # capture ctrl-c signal so we can exit gracefully
+    signal.signal(signal.SIGINT, sigint_handler)
 
     # resize primary window to 1/5 width + 1/2 height
     screen = app.primaryScreen()
