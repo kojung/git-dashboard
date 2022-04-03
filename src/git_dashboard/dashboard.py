@@ -45,10 +45,18 @@ from git_dashboard.config import (
 
 class MainWindow(QMainWindow):
     """main window"""
-    def __init__(self, view):
+    def __init__(self, view, refresh_thread):
         """constructor"""
         super().__init__()
+        self.refresh_thread = refresh_thread
         self.setCentralWidget(view)
+
+    def closeEvent(self, event):
+        """gracefully terminate the application by stopping refresh_thread"""
+        self.refresh_thread.stop = True
+        while not self.refresh_thread.isFinished():
+            time.sleep(1)
+        event.accept()  # let the window close
 
 class RefreshThread(QThread):
     """Separate thread used to query git repos in the background"""
@@ -58,13 +66,20 @@ class RefreshThread(QThread):
         super().__init__()
         self.config  = config
         self.refresh = refresh
+        self.stop    = False
 
     def run(self):
         """thread run method"""
         while True:
             groups = load_configuration(self.config)
             self.ready.emit(groups)
-            time.sleep(self.refresh)
+            # wait for `refresh` seconds, or until stop is issued
+            sleep_cnt = 0
+            while not self.stop and sleep_cnt < self.refresh:
+                time.sleep(1)
+                sleep_cnt += 1
+            if self.stop:
+                break
 
 def parser():
     """argument parser"""
@@ -92,7 +107,6 @@ def main():
     # model and views
     groups = load_configuration(args.config)
     view   = GroupsView(groups, args)
-    window = MainWindow(view)
 
     def refresh_func(groups):
         """refresh repo status"""
@@ -108,8 +122,13 @@ def main():
 
     def sigint_handler(*args): # pylint: disable=unused-argument
         """Handler for the SIGINT signal."""
-        refresh_thread.quit()
+        refresh_thread.stop = True
+        while not refresh_thread.isFinished():
+            time.sleep(1)
         QApplication.quit()
+
+    # instantiate main window
+    window = MainWindow(view, refresh_thread)
 
     # capture ctrl-c signal so we can exit gracefully
     signal.signal(signal.SIGINT, sigint_handler)
