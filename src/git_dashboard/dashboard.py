@@ -34,6 +34,11 @@ from PySide6.QtCore import (
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
+    QVBoxLayout,
+    QHBoxLayout,
+    QWidget,
+    QLabel,
+    QPushButton,
 )
 
 from git_dashboard.groups import GroupsView
@@ -49,7 +54,23 @@ class MainWindow(QMainWindow):
         """constructor"""
         super().__init__()
         self.refresh_thread = refresh_thread
-        self.setCentralWidget(groups_view)
+
+        # status and refresh button packed horizontally
+        self.status = QLabel("git-dashboard")
+        self.button = QPushButton("refresh now")
+        hlayout = QHBoxLayout()
+        hlayout.addWidget(self.status, 66)
+        hlayout.addWidget(self.button, 33)
+
+        # vertical layout
+        vlayout = QVBoxLayout()
+        vlayout.addLayout(hlayout)
+        vlayout.addWidget(groups_view)
+
+        # dummy container widget
+        widget = QWidget()
+        widget.setLayout(vlayout)
+        self.setCentralWidget(widget)
 
     def closeEvent(self, event):
         """gracefully terminate the application by stopping refresh_thread"""
