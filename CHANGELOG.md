@@ -6,8 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.10] - 2022/04/10
+
 ### Fixed
 - Deal with invalid directory names gracefully (instead of just crashing)
+
+### Added
+- Added status bar and refresh button
+
+### Changed
+- Increased default refresh rate to 60 seconds
 
 ## [0.1.9] - 2022/04/02
 
