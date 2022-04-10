@@ -143,7 +143,7 @@ def analyze(path):
     except (InvalidGitRepositoryError, NoSuchPathError):
         return [name, "n/a", "not a git repo", path]
 
-def load_configuration(config=CONFIG):
+def load_configuration(config=CONFIG, initial:bool = False):
     """load configuration"""
     with open(config, "r", encoding="utf-8") as cfg:
         groups = yaml.safe_load(cfg)
@@ -156,10 +156,15 @@ def load_configuration(config=CONFIG):
         # expand directories that contain other git repos
         results[name] = []
         for dirname in group:
-            _, dirnames, _ = next(os.walk(dirname))
-            if ".git" not in dirnames:
-                for sub_repo in find_git_repos_from_path(dirname, 0, 1):
-                    results[name].append(analyze(sub_repo))
-            else:
-                results[name].append(analyze(dirname))
+            try:
+                _, dirnames, _ = next(os.walk(dirname))
+                if ".git" not in dirnames:
+                    for sub_repo in find_git_repos_from_path(dirname, 0, 1):
+                        results[name].append(analyze(sub_repo))
+                else:
+                    results[name].append(analyze(dirname))
+            except StopIteration:
+                # dirname is not valid, warn about it for the first time
+                if initial:
+                    print(f"WARNING: Directory {dirname} is not valid. Ignoring directory")
     return results
