@@ -56,7 +56,7 @@ class MainWindow(QMainWindow):
         self.refresh_thread = refresh_thread
 
         # status and refresh button packed horizontally
-        self.status = QLabel("git-dashboard")
+        self.status = QLabel("Welcome to git-dashboard")
         self.button = QPushButton("refresh now")
         self.button.clicked.connect(self.refresh_button)
         hlayout = QHBoxLayout()
@@ -102,20 +102,21 @@ class RefreshThread(QThread):
             groups = load_configuration(config=self.config, initial=False)
             self.ready.emit(groups)
             # wait for `refresh` seconds, or until stop is issued
-            sleep_cnt = 0
+            elapsed  = 0
             self.force = False
-            while not self.stop and not self.force and sleep_cnt < self.refresh:
+            num_repos  = sum(map(len, groups.values()))
+            while not self.stop and not self.force and elapsed < self.refresh:
                 time.sleep(1)
-                sleep_cnt += 1
-                self.tick.emit(sleep_cnt)
+                elapsed += 1
+                self.tick.emit((elapsed, num_repos))
             if self.stop:
                 break
 
 def parser():
     """argument parser"""
     par = argparse.ArgumentParser(description="Git dashboard")
-    par.add_argument("-r", "--refresh",  type=int, default=10,
-        help="Refresh interval in seconds. Default=10")
+    par.add_argument("-r", "--refresh",  type=int, default=60,
+        help="Refresh interval in seconds. Default=60")
     par.add_argument("-c", "--config",  default=CONFIG,
         help=f"Configuration file. Default={CONFIG}")
     par.add_argument("-s", "--font-scale", type=float, default=1.0,
@@ -161,9 +162,10 @@ def main():
     window = MainWindow(groups_view, refresh_thread)
 
     # update status bar
-    def tick_func(count):
+    def tick_func(elapsed_and_num_repos):
         """update status bar"""
-        window.status.setText(f"Auto refresh in {args.refresh - count} secs...")
+        elapsed, num_repos = elapsed_and_num_repos
+        window.status.setText(f"Tracking {num_repos} repos. Refresh in {args.refresh - elapsed} secs...")
 
     refresh_thread.tick.connect(tick_func)
 
