@@ -45,11 +45,11 @@ from git_dashboard.config import (
 
 class MainWindow(QMainWindow):
     """main window"""
-    def __init__(self, view, refresh_thread):
+    def __init__(self, groups_view, refresh_thread):
         """constructor"""
         super().__init__()
         self.refresh_thread = refresh_thread
-        self.setCentralWidget(view)
+        self.setCentralWidget(groups_view)
 
     def closeEvent(self, event):
         """gracefully terminate the application by stopping refresh_thread"""
@@ -106,11 +106,11 @@ def main():
 
     # model and views
     groups = load_configuration(config=args.config, initial=True)
-    view   = GroupsView(groups, args)
+    groups_view = GroupsView(groups, args)
 
     def refresh_func(groups):
         """refresh repo status"""
-        for name, model in view.models.items():
+        for name, model in groups_view.models.items():
             model.layoutAboutToBeChanged.emit()  # pylint: disable=no-member
             model.group = groups[name]
             model.layoutChanged.emit()           # pylint: disable=no-member
@@ -128,7 +128,7 @@ def main():
         QApplication.quit()
 
     # instantiate main window
-    window = MainWindow(view, refresh_thread)
+    window = MainWindow(groups_view, refresh_thread)
 
     # capture ctrl-c signal so we can exit gracefully
     signal.signal(signal.SIGINT, sigint_handler)
