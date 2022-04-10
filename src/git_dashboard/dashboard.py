@@ -34,6 +34,11 @@ from PySide6.QtCore import (
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
+    QVBoxLayout,
+    QHBoxLayout,
+    QWidget,
+    QLabel,
+    QPushButton,
 )
 
 from git_dashboard.groups import GroupsView
@@ -45,11 +50,28 @@ from git_dashboard.config import (
 
 class MainWindow(QMainWindow):
     """main window"""
-    def __init__(self, view, refresh_thread):
+    def __init__(self, groups_view, refresh_thread):
         """constructor"""
         super().__init__()
         self.refresh_thread = refresh_thread
-        self.setCentralWidget(view)
+
+        # status and refresh button packed horizontally
+        self.status = QLabel("Welcome to git-dashboard")
+        self.button = QPushButton("refresh now")
+        self.button.clicked.connect(self.refresh_button)
+        hlayout = QHBoxLayout()
+        hlayout.addWidget(self.status, 66)
+        hlayout.addWidget(self.button, 33)
+
+        # vertical layout
+        vlayout = QVBoxLayout()
+        vlayout.addWidget(groups_view)
+        vlayout.addLayout(hlayout)
+
+        # dummy container widget
+        widget = QWidget()
+        widget.setLayout(vlayout)
+        self.setCentralWidget(widget)
 
     def closeEvent(self, event):
         """gracefully terminate the application by stopping refresh_thread"""
@@ -58,15 +80,21 @@ class MainWindow(QMainWindow):
             time.sleep(1)
         event.accept()  # let the window close
 
+    def refresh_button(self):
+        """refresh button action"""
+        self.refresh_thread.force = True
+
 class RefreshThread(QThread):
     """Separate thread used to query git repos in the background"""
     ready = Signal(object)   # Signal must be class, not instance member
+    tick  = Signal(object)   # Signal must be class, not instance member
     def __init__(self, config, refresh):
         """constructor"""
         super().__init__()
         self.config  = config
         self.refresh = refresh
         self.stop    = False
+        self.force   = False
 
     def run(self):
         """thread run method"""
@@ -74,18 +102,21 @@ class RefreshThread(QThread):
             groups = load_configuration(config=self.config, initial=False)
             self.ready.emit(groups)
             # wait for `refresh` seconds, or until stop is issued
-            sleep_cnt = 0
-            while not self.stop and sleep_cnt < self.refresh:
+            elapsed  = 0
+            self.force = False
+            num_repos  = sum(map(len, groups.values()))
+            while not self.stop and not self.force and elapsed < self.refresh:
                 time.sleep(1)
-                sleep_cnt += 1
+                elapsed += 1
+                self.tick.emit((elapsed, num_repos))
             if self.stop:
                 break
 
 def parser():
     """argument parser"""
     par = argparse.ArgumentParser(description="Git dashboard")
-    par.add_argument("-r", "--refresh",  type=int, default=10,
-        help="Refresh interval in seconds. Default=10")
+    par.add_argument("-r", "--refresh",  type=int, default=60,
+        help="Refresh interval in seconds. Default=60")
     par.add_argument("-c", "--config",  default=CONFIG,
         help=f"Configuration file. Default={CONFIG}")
     par.add_argument("-s", "--font-scale", type=float, default=1.0,
@@ -106,11 +137,11 @@ def main():
 
     # model and views
     groups = load_configuration(config=args.config, initial=True)
-    view   = GroupsView(groups, args)
+    groups_view = GroupsView(groups, args)
 
     def refresh_func(groups):
         """refresh repo status"""
-        for name, model in view.models.items():
+        for name, model in groups_view.models.items():
             model.layoutAboutToBeChanged.emit()  # pylint: disable=no-member
             model.group = groups[name]
             model.layoutChanged.emit()           # pylint: disable=no-member
@@ -128,7 +159,15 @@ def main():
         QApplication.quit()
 
     # instantiate main window
-    window = MainWindow(view, refresh_thread)
+    window = MainWindow(groups_view, refresh_thread)
+
+    # update status bar
+    def tick_func(elapsed_and_num_repos):
+        """update status bar"""
+        elapsed, num_repos = elapsed_and_num_repos
+        window.status.setText(f"Tracking {num_repos} repos. Refresh in {args.refresh - elapsed} secs...")
+
+    refresh_thread.tick.connect(tick_func)
 
     # capture ctrl-c signal so we can exit gracefully
     signal.signal(signal.SIGINT, sigint_handler)
