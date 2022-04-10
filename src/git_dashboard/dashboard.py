@@ -71,7 +71,7 @@ class RefreshThread(QThread):
     def run(self):
         """thread run method"""
         while True:
-            groups = load_configuration(self.config)
+            groups = load_configuration(config=self.config, initial=False)
             self.ready.emit(groups)
             # wait for `refresh` seconds, or until stop is issued
             sleep_cnt = 0
@@ -105,7 +105,7 @@ def main():
     app = QApplication(sys.argv)
 
     # model and views
-    groups = load_configuration(args.config)
+    groups = load_configuration(config=args.config, initial=True)
     view   = GroupsView(groups, args)
 
     def refresh_func(groups):
