@@ -58,14 +58,15 @@ class MainWindow(QMainWindow):
         # status and refresh button packed horizontally
         self.status = QLabel("git-dashboard")
         self.button = QPushButton("refresh now")
+        self.button.clicked.connect(self.refresh_button)
         hlayout = QHBoxLayout()
         hlayout.addWidget(self.status, 66)
         hlayout.addWidget(self.button, 33)
 
         # vertical layout
         vlayout = QVBoxLayout()
-        vlayout.addLayout(hlayout)
         vlayout.addWidget(groups_view)
+        vlayout.addLayout(hlayout)
 
         # dummy container widget
         widget = QWidget()
@@ -79,15 +80,21 @@ class MainWindow(QMainWindow):
             time.sleep(1)
         event.accept()  # let the window close
 
+    def refresh_button(self):
+        """refresh button action"""
+        self.refresh_thread.force = True
+
 class RefreshThread(QThread):
     """Separate thread used to query git repos in the background"""
     ready = Signal(object)   # Signal must be class, not instance member
+    tick  = Signal(object)   # Signal must be class, not instance member
     def __init__(self, config, refresh):
         """constructor"""
         super().__init__()
         self.config  = config
         self.refresh = refresh
         self.stop    = False
+        self.force   = False
 
     def run(self):
         """thread run method"""
@@ -96,9 +103,11 @@ class RefreshThread(QThread):
             self.ready.emit(groups)
             # wait for `refresh` seconds, or until stop is issued
             sleep_cnt = 0
-            while not self.stop and sleep_cnt < self.refresh:
+            self.force = False
+            while not self.stop and not self.force and sleep_cnt < self.refresh:
                 time.sleep(1)
                 sleep_cnt += 1
+                self.tick.emit(sleep_cnt)
             if self.stop:
                 break
 
@@ -150,6 +159,13 @@ def main():
 
     # instantiate main window
     window = MainWindow(groups_view, refresh_thread)
+
+    # update status bar
+    def tick_func(count):
+        """update status bar"""
+        window.status.setText(f"Auto refresh in {args.refresh - count} secs...")
+
+    refresh_thread.tick.connect(tick_func)
 
     # capture ctrl-c signal so we can exit gracefully
     signal.signal(signal.SIGINT, sigint_handler)
