@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Deal with invalid directory names gracefully (instead of just crashing)
+
 ## [0.1.9] - 2022/04/02
 
 ### Fixed
