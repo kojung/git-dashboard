@@ -49,14 +49,15 @@ class GroupModel(QtCore.QAbstractTableModel):
     def __init__(self, group):
         """Constructor"""
         super().__init__()
-        self.header = ["name", "branch", "status"]
+        self.header = ["name", "branch", "status", "path"]
         self.group = group
 
     def data(self, index, role): # pylint: disable=too-many-return-statements
         """access model data"""
         # DisplayRole
         if role == Qt.DisplayRole:
-            return self.group[index.row()][index.column()]
+            column_name = self.header[index.column()]
+            return self.group[index.row()][column_name]
 
         # ForeGroundRole
         if index.isValid() and role == Qt.ForegroundRole:
@@ -78,7 +79,7 @@ class GroupModel(QtCore.QAbstractTableModel):
             if index.column() == Column.STATUS and index.data() != "clean":
                 return "-:behind\n+:ahead\nu:untracked\ns:staged"
             if index.column() in [Column.NAME, Column.BRANCH]:
-                return self.group[index.row()][Column.PATH]
+                return self.group[index.row()]["path"]
 
         return None
 
@@ -88,7 +89,7 @@ class GroupModel(QtCore.QAbstractTableModel):
 
     def columnCount(self, _):
         """number of columns"""
-        return len(self.header)
+        return len(self.header) - 1  # skip "path" column
 
     def headerData(self, col, orientation, role):
         """table header"""

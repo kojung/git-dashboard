@@ -25,6 +25,7 @@ import signal
 from pathlib import Path
 import argparse
 import time
+import json
 
 from PySide6.QtCore import (
     Signal,
@@ -58,7 +59,7 @@ class MainWindow(QMainWindow):
         # status and refresh button packed horizontally
         self.status = QLabel("Welcome to git-dashboard")
         self.button = QPushButton("refresh now")
-        self.button.clicked.connect(self.refresh_button)
+        self.button.clicked.connect(self.refresh_button)  # pylint: disable=no-member
         hlayout = QHBoxLayout()
         hlayout.addWidget(self.status, 66)
         hlayout.addWidget(self.button, 33)
@@ -115,23 +116,18 @@ class RefreshThread(QThread):
 def parser():
     """argument parser"""
     par = argparse.ArgumentParser(description="Git dashboard")
-    par.add_argument("-r", "--refresh",  type=int, default=60,
-        help="Refresh interval in seconds. Default=60")
     par.add_argument("-c", "--config",  default=CONFIG,
         help=f"Configuration file. Default={CONFIG}")
+    par.add_argument("--no-gui",  default=False, action='store_true',
+        help="No GUI. Show repo status in JSON format and exit")
+    par.add_argument("-r", "--refresh",  type=int, default=60,
+        help="Refresh interval in seconds. Default=60")
     par.add_argument("-s", "--font-scale", type=float, default=1.0,
         help="Font scale. Default=1.0")
     return par
 
-def main():
-    """main routine for test purposes"""
-    args = parser().parse_args()
-
-    # create default configuration if needed
-    if not os.path.exists(args.config):
-        home = Path.home()
-        create_default_configuration(home, 'home', args.config)
-
+def gui_mode(args):
+    """start git-dashboard in GUI mode"""
     # start the app
     app = QApplication(sys.argv)
 
@@ -179,6 +175,25 @@ def main():
 
     window.show()
     app.exec()
+
+def cmdline_mode(args):
+    """command line mode"""
+    groups = load_configuration(config=args.config, initial=True)
+    print(json.dumps(groups, indent=2))
+
+def main():
+    """main routine for test purposes"""
+    args = parser().parse_args()
+
+    # create default configuration if needed
+    if not os.path.exists(args.config):
+        home = Path.home()
+        create_default_configuration(home, 'home', args.config)
+
+    if args.no_gui:
+        cmdline_mode(args)
+    else:
+        gui_mode(args)
 
 if __name__ == "__main__":
     main()

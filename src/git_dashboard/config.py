@@ -97,7 +97,7 @@ def count_untracked_files(repo) -> int:
 def analyze(path):
     """
     given a path to a git repository, return:
-    [name, branch, status]
+    {name: name, branch: branch, status: status, path: path}
     """
     name = os.path.basename(path)
     try:
@@ -139,9 +139,9 @@ def analyze(path):
         # simplify the clean case
         if joined_status in ["clean/-0/+0/u0/s0", "clean/u0/s0"]:
             joined_status = "clean"
-        return [name, branch, joined_status, path]
+        return {"name": name, "branch": branch, "status": joined_status, "path": path}
     except (InvalidGitRepositoryError, NoSuchPathError):
-        return [name, "n/a", "not a git repo", path]
+        return {"name": name, "branch": "n/a", "status": "not a git repo", "path": path}
 
 def load_configuration(config=CONFIG, initial:bool = False):
     """load configuration"""

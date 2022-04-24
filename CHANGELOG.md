@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.11] - 2022/04/24
+
+### Added
+- Command line mode where repo status are returned as JSON
+
 ## [0.1.10] - 2022/04/10
 
 ### Fixed
