@@ -141,7 +141,7 @@ def analyze(path):
             joined_status = "clean"
         return {"name": name, "branch": branch, "status": joined_status, "path": path}
     except (InvalidGitRepositoryError, NoSuchPathError):
-        return {"name": name, "branch": "b/a", "status": "not a git repo", "path": path}
+        return {"name": name, "branch": "n/a", "status": "not a git repo", "path": path}
 
 def load_configuration(config=CONFIG, initial:bool = False):
     """load configuration"""
