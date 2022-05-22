@@ -47,12 +47,16 @@ projects:
   - /home/john/Projects  # will include `foo`, `bar`, `baz`
 
 nasa:
-  - /home/john/nasa  # will include `proj1`, `proj2`, `proj3`
+  - /home/john/nasa            # will include `proj1`, `proj2`, `proj3`
+  - "!/home/john/nasa/proj2"   # exclude proj2
 
 misc:
   - /home/john/misc  # individual repos can be listed too
   - /home/john/bin
 ```
+
+Note that prefixing "!" in front of a path can exclude a repo from a group. Due to YAML
+syntax, we need to enclose the path in single or double quotes.
 
 Type:
 
