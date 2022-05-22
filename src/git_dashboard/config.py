@@ -21,6 +21,8 @@ Configuration is stored as a YAML file with the following format:
 """
 
 import os
+import re
+import copy
 
 from appdirs import user_config_dir
 import yaml
@@ -144,18 +146,25 @@ def analyze(path):
         return {"name": name, "branch": "n/a", "status": "not a git repo", "path": path}
 
 def load_configuration(config=CONFIG, initial:bool = False):
-    """load configuration"""
+    """
+    Load configuration in YAML format.
+    If `initial` is True, display warnings if some repos are not valid.
+    """
     with open(config, "r", encoding="utf-8") as cfg:
         groups = yaml.safe_load(cfg)
 
     # iterate through each group and do:
     # 1. expand paths that contain other git repos
     # 2. analyze git repos
-    results = {}
+    results  = {}
+    excludes = set()
     for name, group in groups.items():
         # expand directories that contain other git repos
         results[name] = []
         for dirname in group:
+            if re.match(r"^!", dirname):
+                excludes.add(re.sub(r"^!", "", dirname))
+                continue
             try:
                 _, dirnames, _ = next(os.walk(dirname))
                 if ".git" not in dirnames:
@@ -167,4 +176,11 @@ def load_configuration(config=CONFIG, initial:bool = False):
                 # dirname is not valid, warn about it for the first time
                 if initial:
                     print(f"WARNING: Directory {dirname} is not valid. Ignoring directory")
+
+        # process exclusions
+        for repo in copy.copy(results[name]):
+            if repo["path"] in excludes:
+                results[name].remove(repo)
+                if initial:
+                    print(f"WARNING: Excluding directory '{repo['path']}'")
     return results

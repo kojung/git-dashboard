@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.12] - 2022/05/22
+
+### Added
+
+- Ability to exclude directories
+
+### Changed
+
+- Updated screenshot to latest
+
 ## [0.1.11] - 2022/04/24
 
 ### Added
