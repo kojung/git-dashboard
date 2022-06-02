@@ -26,6 +26,8 @@ from pathlib import Path
 import argparse
 import time
 import json
+import pkg_resources
+
 
 from PySide6.QtCore import (
     Signal,
@@ -115,6 +117,10 @@ class RefreshThread(QThread):
 
 def parser():
     """argument parser"""
+    try:
+        version = pkg_resources.require("git-dashboard")[0].version
+    except pkg_resources.DistributionNotFound:
+        version = 'develop'
     par = argparse.ArgumentParser(description="Git dashboard")
     par.add_argument("-c", "--config",  default=CONFIG,
         help=f"Configuration file. Default={CONFIG}")
@@ -124,6 +130,8 @@ def parser():
         help="Refresh interval in seconds. Default=60")
     par.add_argument("-s", "--font-scale", type=float, default=1.0,
         help="Font scale. Default=1.0")
+    par.add_argument("-v", "--version", action='version', version=version,
+        help=f"Print version ({version}) and exit")
     return par
 
 def gui_mode(args):
