@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.14] - 2022/12/25
+
+### Fixed
+
+- Fixed BadName exception in corner cases that causes program to freeze
+
+### Changed
+
+- Pin down requirement versions
+- Split requirements into dev and non-dev versions
+
 ## [0.1.13] - 2022/06/02
 
 ### Added

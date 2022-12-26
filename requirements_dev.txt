@@ -1,0 +1,4 @@
+pylint == 2.15.9
+twine
+cython
+-r requirements.txt

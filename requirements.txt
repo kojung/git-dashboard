@@ -1,7 +1,4 @@
 appdirs
 GitPython
-pylint
-PySide6
+PySide6 == 6.4.0.1
 PyYAML
-twine
-cython
