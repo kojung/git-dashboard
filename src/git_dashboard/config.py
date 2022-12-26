@@ -30,7 +30,8 @@ from git import (
     Repo,
     InvalidGitRepositoryError,
     NoSuchPathError,
-    GitCommandError
+    GitCommandError,
+    BadName,
 )
 from git.compat import (
     defenc
@@ -134,7 +135,11 @@ def analyze(path):
         status.append(f"u{count_untracked_files(repo)}")
 
         # count staged files
-        status.append(f"s{len(repo.index.diff('HEAD'))}")
+        try:
+            status.append(f"s{len(repo.index.diff('HEAD'))}")
+        except BadName:
+            # can't resolve HEAD, assume 0 staged files
+            status.append(f"s0")
 
         joined_status = "/".join(status)
 
